@@ -1,6 +1,6 @@
 import 'package:ecchhoos/src/bloc/playback/playback_bloc.dart';
 import 'package:ecchhoos/src/bloc/playback/playback_state.dart';
-import 'package:ecchhoos/src/repository/items.dart';
+import 'package:ecchhoos/src/models/items.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

@@ -1,21 +1,8 @@
-class TranscribedMediaItem {
-  final String name;
-  final String description;
-  final String mediaPath;
-  final String transcription;
-
-  TranscribedMediaItem(
-      {required this.name, required this.description, required this.mediaPath, required this.transcription});
-}
+import 'package:ecchhoos/src/models/items.dart';
 
 // FIXME: This is a stub. Replace with a real implementation.
 Future<List<TranscribedMediaItem>> getAllItems() async {
-  return [
-    TranscribedMediaItem(
-        name: 'Sample MP3',
-        description: 'Sample file from WikiMedia',
-        mediaPath: 'https://upload.wikimedia.org/wikipedia/commons/8/8f/Test_mp3_opus_16kbps.wav',
-        transcription: """1
+  const sampleTranscription = """1
 00:00:00,000 --> 00:00:02,600
 The birch canoe slid on the smooth planks.
 
@@ -64,6 +51,15 @@ It's easy to tell the depths of a well.
 Four hours of steady work faced us.
 
 
-"""),
+""";
+
+  return [
+    TranscribedMediaItem(
+      name: 'Sample MP3',
+      description: 'Sample file from WikiMedia',
+      mediaPath: 'https://upload.wikimedia.org/wikipedia/commons/8/8f/Test_mp3_opus_16kbps.wav',
+      rawTranscription: sampleTranscription,
+      transcription: parseTranscript(sampleTranscription),
+    ),
   ];
 }

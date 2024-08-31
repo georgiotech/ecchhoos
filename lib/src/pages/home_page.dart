@@ -1,4 +1,5 @@
 import 'package:ecchhoos/src/bloc/playback/playback_bloc.dart';
+import 'package:ecchhoos/src/models/items.dart';
 import 'package:ecchhoos/src/repository/items.dart';
 import 'package:ecchhoos/src/widgets/item_list.dart';
 import 'package:ecchhoos/src/widgets/transcript_viewer.dart';
@@ -47,7 +48,12 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 Expanded(
-                  child: TranscriptViewer(transcribedText: selectedItem?.transcription),
+                  child: selectedItem?.transcription == null
+                      ? const Center(
+                          child: Text(
+                          'Ec...ch...ho...os...',
+                        ))
+                      : TranscriptViewer(transcribedText: selectedItem!.transcription),
                 ),
                 Container(
                   color: theme.splashColor,
