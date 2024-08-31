@@ -13,6 +13,7 @@ class PlaybackBloc extends Bloc<PlaybackEvent, PlaybackState> {
     on<StartPlayback>(_onStartPlayback);
     on<PausePlayback>(_onPausePlayback);
     on<StopPlayback>(_onStopPlayback);
+    on<ChangePlaybackPosition>(_onChangePlaybackPosition);
   }
 
   void _onLoadMediaFromUrl(LoadMediaFromRemote event, Emitter<PlaybackState> emit) async {
@@ -45,6 +46,16 @@ class PlaybackBloc extends Bloc<PlaybackEvent, PlaybackState> {
       emit(AudioStopped());
     } else if (state is AudioLoading) {
       emit(AudioUnloaded());
+    }
+  }
+
+  void _onChangePlaybackPosition(ChangePlaybackPosition event, Emitter<PlaybackState> emit) async {
+    if (state is AudioStopped && event.autoPlayIfPaused) {
+      await _audioPlayer.seek(Duration(seconds: event.position.toInt()));
+      await _audioPlayer.resume();
+      emit(AudioPlaying());
+    } else if (state is AudioPlaying) {
+      await _audioPlayer.seek(Duration(seconds: event.position.toInt()));
     }
   }
 }

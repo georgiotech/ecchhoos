@@ -11,3 +11,10 @@ class PausePlayback extends PlaybackEvent {}
 class StopPlayback extends PlaybackEvent {}
 
 class StartPlayback extends PlaybackEvent {}
+
+class ChangePlaybackPosition extends PlaybackEvent {
+  final double position;
+  final bool autoPlayIfPaused;
+
+  ChangePlaybackPosition({required this.position, this.autoPlayIfPaused = true});
+}
