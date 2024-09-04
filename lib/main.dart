@@ -1,5 +1,8 @@
+import 'package:ecchhoos/src/bloc/navigation/navigation_bloc.dart';
 import 'package:ecchhoos/src/pages/home_page.dart';
+import 'package:ecchhoos/src/pages/manage_remotes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() {
   runApp(const MyApp());
@@ -63,7 +66,17 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: const HomePage(), // This trailing comma makes auto-formatting nicer for build methods.
+      body: BlocProvider(
+        create: (context) => NavigationBloc(),
+        child: BlocBuilder<NavigationBloc, NavigationState>(
+          builder: (context, state) {
+            if (state.currentPage == ApplicationPage.viewTranscripts) {
+              return HomePage();
+            }
+            return ManageRemotesPage();
+          },
+        ),
+      ),
     );
   }
 }

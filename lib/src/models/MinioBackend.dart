@@ -18,7 +18,7 @@ class MinioBackend implements GenericBackend {
   MinioBackend({
     required this.endpoint,
     this.port = 9330,
-    this.useSSL = true,
+    required this.useSSL,
     required this.accessKey,
     required this.secretKey,
     required this.bucketName,

@@ -1,13 +1,15 @@
 import 'package:ecchhoos/src/bloc/items/items_bloc.dart';
+import 'package:ecchhoos/src/bloc/navigation/navigation_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class RemotesListControls extends StatelessWidget {
-  const RemotesListControls({Key? key}) : super(key: key);
+class HomePageNavigation extends StatelessWidget {
+  const HomePageNavigation({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final itemsBloc = BlocProvider.of<ItemsBloc>(context);
+    final navigationBloc = BlocProvider.of<NavigationBloc>(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -21,10 +23,10 @@ class RemotesListControls extends StatelessWidget {
         IconButton(
           onPressed: () {
             // Add your add logic here
-            print('TODO: add logic');
+            navigationBloc.add(NavigateToApplicationPage(ApplicationPage.configureRemotes));
           },
-          icon: Icon(Icons.add),
-          tooltip: 'Add',
+          icon: Icon(Icons.settings),
+          tooltip: 'Repositories',
         ),
       ],
     );
