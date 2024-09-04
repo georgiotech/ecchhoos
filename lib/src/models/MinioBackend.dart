@@ -13,6 +13,7 @@ class MinioBackend implements GenericBackend {
   final String secretKey;
   final String bucketName;
   final String pathPrefix;
+  final String uuid;
 
   MinioBackend({
     required this.endpoint,
@@ -22,7 +23,8 @@ class MinioBackend implements GenericBackend {
     required this.secretKey,
     required this.bucketName,
     required this.pathPrefix,
-  });
+    String? uuid,
+  }) : uuid = uuid ?? GenericBackend.generateUuid();
 
   Minio get client => Minio(
         endPoint: endpoint,
@@ -110,6 +112,7 @@ class MinioBackend implements GenericBackend {
 
   // Serialize to JSON
   Map<String, dynamic> toJson() => {
+        'uuid': uuid,
         'type': 'minio',
         'endpoint': endpoint,
         'port': port,
@@ -122,6 +125,7 @@ class MinioBackend implements GenericBackend {
 
   // Deserialize from JSON
   factory MinioBackend.fromJson(Map<String, dynamic> json) => MinioBackend(
+        uuid: json['uuid'],
         endpoint: json['endpoint'],
         port: json['port'],
         useSSL: json['useSSL'],
