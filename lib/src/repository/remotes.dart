@@ -15,6 +15,10 @@ class RemotesRepository {
 
   RemotesRepository({required this.registeredRemotes});
 
+  factory RemotesRepository.empty() {
+    return RemotesRepository(registeredRemotes: []);
+  }
+
   // Assuming you have a fromJson factory constructor
   factory RemotesRepository.fromJson(Map<String, dynamic> json) {
     var list = (json['registeredRemotes'] as List<dynamic>);
@@ -54,5 +58,30 @@ class RemotesRepository {
       print('Failed to load remotes: $e');
       return null;
     }
+  }
+
+  void updateRemote(GenericBackend remote) {
+    registeredRemotes.removeWhere((element) => element.uuid == remote.uuid);
+    registeredRemotes.add(remote);
+  }
+
+  void removeRemote(String uuid) {
+    registeredRemotes.removeWhere((element) => element.uuid == uuid);
+  }
+
+  // temporary solution to create a first remote since there's no UI for it yet
+  // FIXME: don't assume MinioBackend
+  MinioBackend createNewRemote() {
+    final newRemote = MinioBackend(
+      uuid: GenericBackend.generateUuid(),
+      endpoint: 'localhost',
+      port: 9330,
+      accessKey: '<secret>',
+      secretKey: '<secret>',
+      bucketName: '',
+      pathPrefix: '',
+    );
+    registeredRemotes.add(newRemote);
+    return newRemote;
   }
 }

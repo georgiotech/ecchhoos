@@ -106,5 +106,72 @@ void main() {
       expect(repo.secretKey, minioRepo.secretKey);
       expect(repo.uuid, minioRepo.uuid);
     });
+
+    test('createNewRemote appends a new backend to the list', () {
+      final remotesRepo = RemotesRepository.empty();
+      expect(remotesRepo.registeredRemotes.length, 0);
+      final newRemote = remotesRepo.createNewRemote();
+      expect(remotesRepo.registeredRemotes.length, 1);
+      expect(remotesRepo.registeredRemotes[0].uuid, newRemote.uuid);
+    });
+
+    test('updateRemote updates an existing backend in the list', () {
+      final remotesRepo = RemotesRepository.empty();
+      final remoteToReplace = remotesRepo.createNewRemote();
+      expect(remotesRepo.registeredRemotes.length, 1);
+
+      final updatedRemote = MinioBackend(
+        uuid: remoteToReplace.uuid,
+        endpoint: 'https://updated-example.com',
+        port: 9331,
+        useSSL: false,
+        accessKey: 'updatedAccessKey',
+        secretKey: 'updatedSecretKey',
+        bucketName: 'updatedBucket',
+        pathPrefix: 'updatedPrefix/',
+      );
+      remotesRepo.updateRemote(updatedRemote);
+      expect(remotesRepo.registeredRemotes.length, 1);
+      expect(remotesRepo.registeredRemotes[0].uuid, remoteToReplace.uuid);
+      final postUpdateRepo = remotesRepo.registeredRemotes[0] as MinioBackend;
+      expect(postUpdateRepo.endpoint, updatedRemote.endpoint);
+      expect(postUpdateRepo.port, updatedRemote.port);
+    });
+
+    test('updateRemote inserts a non-existent backend to the list', () {
+      final remotesRepo = RemotesRepository.empty();
+      expect(remotesRepo.registeredRemotes.length, 0);
+
+      final newRemote = MinioBackend(
+        endpoint: 'https://updated-example.com',
+        port: 9331,
+        useSSL: false,
+        accessKey: 'updatedAccessKey',
+        secretKey: 'updatedSecretKey',
+        bucketName: 'updatedBucket',
+        pathPrefix: 'updatedPrefix/',
+      );
+      remotesRepo.updateRemote(newRemote);
+      expect(remotesRepo.registeredRemotes.length, 1);
+      expect(remotesRepo.registeredRemotes[0].uuid, newRemote.uuid);
+    });
+
+    test('removeRemote deletes an existing backend from the list', () {
+      final remotesRepo = RemotesRepository.empty();
+      final remoteToDelete = remotesRepo.createNewRemote();
+      expect(remotesRepo.registeredRemotes.length, 1);
+
+      remotesRepo.removeRemote(remoteToDelete.uuid);
+      expect(remotesRepo.registeredRemotes.length, 0);
+    });
+
+    test('removeRemote does nothing if the backend does not exist', () {
+      final remotesRepo = RemotesRepository.empty();
+      remotesRepo.createNewRemote();
+      expect(remotesRepo.registeredRemotes.length, 1);
+
+      remotesRepo.removeRemote('unmatching-uuid');
+      expect(remotesRepo.registeredRemotes.length, 1);
+    });
   });
 }
