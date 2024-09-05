@@ -1,7 +1,8 @@
+import 'package:ecchhoos/src/bloc/items/items_bloc.dart';
 import 'package:ecchhoos/src/bloc/playback/playback_bloc.dart';
 import 'package:ecchhoos/src/models/items.dart';
-import 'package:ecchhoos/src/repository/items.dart';
 import 'package:ecchhoos/src/widgets/item_list.dart';
+import 'package:ecchhoos/src/widgets/home_page_navigation.dart';
 import 'package:ecchhoos/src/widgets/transcript_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -28,19 +29,29 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
 
-    return BlocProvider<PlaybackBloc>(
-        create: (context) => PlaybackBloc(),
+    return MultiBlocProvider(
+        providers: [
+          BlocProvider<PlaybackBloc>(create: (context) => PlaybackBloc()),
+          BlocProvider<ItemsBloc>(
+            create: (context) => ItemsBloc()..add(LoadItems()),
+          ),
+        ],
         child: Row(children: [
           SizedBox(
             width: 200,
-            child: FutureBuilder<List<TranscribedMediaItem>>(
-                future: getAllItems(),
-                builder: (ctx, snapshot) {
-                  if (snapshot.hasData) {
-                    return PlaybackItemList(items: snapshot.data!, onItemSelected: onItemSelected);
-                  }
-                  return const Center(child: CircularProgressIndicator());
-                }),
+            child: Column(
+              children: [
+                HomePageNavigation(),
+                Expanded(
+                  child: BlocBuilder<ItemsBloc, ItemsState>(builder: (ctx, state) {
+                    if (state is ItemsLoaded) {
+                      return PlaybackItemList(items: state.items, onItemSelected: onItemSelected);
+                    }
+                    return const Center(child: CircularProgressIndicator());
+                  }),
+                ),
+              ],
+            ),
           ),
           Expanded(
             child: Column(
