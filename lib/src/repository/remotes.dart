@@ -52,7 +52,7 @@ class RemotesRepository {
     try {
       final prefs = await SharedPreferences.getInstance();
       final jsonString = prefs.getString('remotes');
-      if (jsonString == null) return null;
+      if (jsonString == null) return RemotesRepository.empty();
       final jsonMap = jsonDecode(jsonString);
       final loaded = RemotesRepository.fromJson(jsonMap);
       print('Loaded ${loaded.registeredRemotes.length} remotes');
