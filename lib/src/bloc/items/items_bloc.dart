@@ -31,7 +31,7 @@ class ItemsBloc extends Bloc<ItemsEvent, ItemsState> {
       emit(ItemsLoading());
 
       try {
-        final remotes = await RemotesRepository.loadFromPreferences();
+        final remotes = await RemotesRepository.loadFromSecureStorage();
         List<TranscribedMediaItem> items = [];
         if (remotes != null) {
           final promises = remotes.registeredRemotes.map((remote) async {

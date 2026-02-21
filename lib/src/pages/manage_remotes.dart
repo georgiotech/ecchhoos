@@ -10,7 +10,7 @@ class ManageRemotesPage extends StatefulWidget {
   final Future<RemotesRepository?> remotes;
 
   ManageRemotesPage({Key? key})
-      : remotes = RemotesRepository.loadFromPreferences(),
+      : remotes = RemotesRepository.loadFromSecureStorage(),
         super(key: key);
 
   @override
@@ -91,7 +91,7 @@ class _State extends State<ManageRemotesPage> {
                   return;
                 }
                 final newRemote = r.createNewRemote();
-                await r.saveToPreferences();
+                await r.saveToSecureStorage();
                 onItemSelected(newRemote);
               },
               icon: Icon(Icons.add),
@@ -140,13 +140,13 @@ class _State extends State<ManageRemotesPage> {
                   onSave: (remote) async {
                     final r = await widget.remotes;
                     r?.updateRemote(remote);
-                    await r?.saveToPreferences();
+                    await r?.saveToSecureStorage();
                     setState(() {});
                   },
                   onDelete: (uuid) async {
                     final r = await widget.remotes;
                     r?.removeRemote(uuid);
-                    await r?.saveToPreferences();
+                    await r?.saveToSecureStorage();
                     setState(() {
                       selectedItem = null;
                     });

@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:ecchhoos/src/models/MinioBackend.dart';
 import 'package:ecchhoos/src/repository/remotes.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -8,6 +10,7 @@ void main() {
     setUp(() {
       // Use the mock shared preferences for testing
       SharedPreferences.setMockInitialValues({});
+      FlutterSecureStorage.setMockInitialValues({});
     });
 
     test('MinioBackend should generate UUID if none is provided', () {
@@ -75,7 +78,7 @@ void main() {
       expect(repoRecreated.uuid, minioRepo.uuid);
     });
 
-    test('saveToPreferences and loadFromPreferences should work correctly', () async {
+    test('saveToSecureStorage and loadFromSecureStorage should work correctly', () async {
       // Create a sample MinioBackend
       final minioRepo = MinioBackend(
         endpoint: 'https://example.com',
@@ -90,11 +93,11 @@ void main() {
       // Create a RemotesRepository with the sample MinioRepository
       final remotesRepo = RemotesRepository(registeredRemotes: [minioRepo]);
 
-      // Save to shared preferences
-      await remotesRepo.saveToPreferences();
+      // Save to secure storage
+      await remotesRepo.saveToSecureStorage();
 
-      // Load from shared preferences
-      final loadedRepo = await RemotesRepository.loadFromPreferences();
+      // Load from secure storage
+      final loadedRepo = await RemotesRepository.loadFromSecureStorage();
       var repo = loadedRepo?.registeredRemotes[0] as MinioBackend;
 
       // Check that the loaded object matches the original
@@ -105,6 +108,42 @@ void main() {
       expect(repo.accessKey, minioRepo.accessKey);
       expect(repo.secretKey, minioRepo.secretKey);
       expect(repo.uuid, minioRepo.uuid);
+    });
+
+    test('loadFromSecureStorage should migrate from SharedPreferences', () async {
+      final minioRepo = MinioBackend(
+        endpoint: 'https://old-example.com',
+        port: 9000,
+        useSSL: false,
+        accessKey: 'oldKey',
+        secretKey: 'oldSecret',
+        bucketName: 'oldBucket',
+        pathPrefix: 'oldPrefix',
+      );
+      final remotesRepo = RemotesRepository(registeredRemotes: [minioRepo]);
+      final jsonString = jsonEncode(remotesRepo.toJson());
+
+      // Populate SharedPreferences
+      SharedPreferences.setMockInitialValues({'remotes': jsonString});
+      // Ensure SecureStorage is empty
+      FlutterSecureStorage.setMockInitialValues({});
+
+      // Load (should trigger migration)
+      final loadedRepo = await RemotesRepository.loadFromSecureStorage();
+
+      expect(loadedRepo?.registeredRemotes.length, 1);
+      final repo = loadedRepo?.registeredRemotes[0] as MinioBackend;
+      expect(repo.endpoint, 'https://old-example.com');
+
+      // Verify SharedPreferences is empty
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.containsKey('remotes'), false);
+
+      // Verify SecureStorage has data
+      const storage = FlutterSecureStorage();
+      final storedJson = await storage.read(key: 'remotes');
+      expect(storedJson, isNotNull);
+      expect(storedJson, jsonString);
     });
 
     test('createNewRemote appends a new backend to the list', () {

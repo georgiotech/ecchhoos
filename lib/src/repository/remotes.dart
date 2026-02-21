@@ -2,9 +2,11 @@ import 'dart:convert';
 import 'package:ecchhoos/src/models/GenericBackend.dart';
 import 'package:ecchhoos/src/models/MinioBackend.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class RemotesRepository {
   List<GenericBackend> registeredRemotes;
+  static const _storage = FlutterSecureStorage();
 
   // Serialize RemotesRepository to JSON
   Map<String, dynamic> toJson() {
@@ -32,26 +34,41 @@ class RemotesRepository {
     );
   }
 
-  // TODO: Save to secure storage instead?
-  // Save MinioRepository to shared preferences
-  Future<void> saveToPreferences() async {
-    print('Saving information about ${registeredRemotes.length} backends to shared-preferences');
+  // Save MinioRepository to secure storage
+  Future<void> saveToSecureStorage() async {
+    print('Saving information about ${registeredRemotes.length} backends to secure storage');
     try {
-      final prefs = await SharedPreferences.getInstance();
       final jsonString = jsonEncode(toJson());
-      await prefs.setString('remotes', jsonString);
+      await _storage.write(key: 'remotes', value: jsonString);
     } catch (e) {
       // Handle any errors here
       print('Failed to save remotes: $e');
     }
   }
 
-  // Load MinioRepository from shared preferences
-  static Future<RemotesRepository?> loadFromPreferences() async {
-    print('Loading information about configured backends from shared-preferences');
+  // Load MinioRepository from secure storage
+  static Future<RemotesRepository?> loadFromSecureStorage() async {
+    print('Loading information about configured backends from secure storage');
     try {
+      // Check for legacy shared preferences data
       final prefs = await SharedPreferences.getInstance();
-      final jsonString = prefs.getString('remotes');
+      if (prefs.containsKey('remotes')) {
+        print('Migrating remotes from shared-preferences to secure storage');
+        final jsonString = prefs.getString('remotes');
+        if (jsonString != null) {
+          // Save to secure storage
+          await _storage.write(key: 'remotes', value: jsonString);
+          // Remove from shared preferences
+          await prefs.remove('remotes');
+
+          final jsonMap = jsonDecode(jsonString);
+          final loaded = RemotesRepository.fromJson(jsonMap);
+          print('Loaded ${loaded.registeredRemotes.length} remotes (migrated)');
+          return loaded;
+        }
+      }
+
+      final jsonString = await _storage.read(key: 'remotes');
       if (jsonString == null) return RemotesRepository.empty();
       final jsonMap = jsonDecode(jsonString);
       final loaded = RemotesRepository.fromJson(jsonMap);
